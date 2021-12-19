@@ -16,8 +16,8 @@ func move():
 	vel_wish = kinBody.i.fVec*kinBody.i.fmove + kinBody.i.sVec*kinBody.i.smove
 	dir = vel_wish.normalized() 
 			
-	var pos_target = dir * kinBody.cvar.phy_base_movespeed
-	var accel = kinBody.cvar.phy_ground_accel if dir.dot(vel_wish) > 0 else -kinBody.cvar.phy_ground_accel
+	var pos_target = dir * kinBody.base_movespeed
+	var accel = kinBody.ground_accel if dir.dot(vel_wish) > 0 else -kinBody.ground_accel
 	
 	vel_wish = vel_wish.linear_interpolate(pos_target, accel * kinBody.delta)
 	vel.x = vel_wish.x
@@ -32,21 +32,14 @@ func move():
 	kinBody.ui.speedU(vel)
 	return vel
 
-func jump(): vel.y += kinBody.cvar.phy_base_jump#*kinBody.delta
-func gravity(): vel.y -= (kinBody.cvar.phy_base_gravity*kinBody.delta)
+func jump(): vel.y += kinBody.base_jump#*kinBody.delta
+func gravity(): vel.y -= (kinBody.base_gravity*kinBody.delta)
 
-var fixf = 0.01 #Floating point precision desired
-var fix = Vector3()*fixf #Vector3 version of the fix, for more readable code than fixf everywhere.
-#move_and_collide ( Vector3 rel_vec, bool infinite_inertia=true, bool exclude_raycast_shapes=true, bool test_only=false )
 func testmove(velocity:Vector3):
-	return kinBody.move_and_collide(velocity, kinBody.cvar.phy_gd_infiniteInertia, true, true)
+	return kinBody.move_and_collide(velocity, kinBody.infiniteInertia, true, true)
 
 func slidemove(velocity:Vector3): #Slide & Step
-	velocity = velocity.snapped(fix)
-	#var origin = kinBody.global_transform.origin
 	#Check forward move
-	#var trace = Trace.new(g, origin+velocity, velocity)
-	#trace.check("move")
 	var test = testmove(velocity) # Test will contain a KinematicCollision class if it hit. Will be null otherwise.
 	var stairs = false if test == null else true
 	#Do slide if can move forward. Do step if trace hit somethinkinBody.
@@ -55,15 +48,16 @@ func slidemove(velocity:Vector3): #Slide & Step
 
 func slide(velocity:Vector3):
 	var result = kinBody.move_and_slide(velocity, Vector3.UP,
-							kinBody.cvar.phy_gd_stopOnSlope,
-							kinBody.cvar.phy_gd_rampslide_max,
-							deg2rad(kinBody.cvar.phy_gd_rampAngle),
-							kinBody.cvar.phy_gd_infiniteInertia)
-	return result.snapped(fix)
+							kinBody.stopOnSlope,
+							kinBody.rampslide_max,
+							deg2rad(kinBody.rampAngle),
+							kinBody.infiniteInertia)
+	return result
 
 func step(velocity:Vector3):
-	var stepsize = kinBody.cvar.phy_base_stepsize
+	var stepsize = kinBody.base_stepsize
 	var origin = kinBody.global_transform.origin
+
 	# Find where the step is (aka move towards the velocity, which could also be down)
 	var collision = testmove(velocity) # A null collision should not happen, since we checked for collision in slidemove before this.
 	var safe = 0.1 # Percentage of the full move to avoid, so that we don't get slowed to a halt by colliding with the wall
