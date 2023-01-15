@@ -1,7 +1,7 @@
 #___________________
 # Real Life context:
 #   Sports coaching.
-#   My players have a current speed-per-lap performance of 24sec/lap. Today is day 0
+#   My players have a current speed performance of 24sec/lap. Today is day 0
 #   I have speed goal for this season, lets say 20sec/lap, and I want to achieve that by next month, so day30
 #   Getting from 24 to 23 is much easier than getting from 21 to 20 (logarithmic model)
 #   This code is used to find all of the inbetween speeds,
